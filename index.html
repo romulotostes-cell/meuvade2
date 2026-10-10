@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#162c32">
+  <meta name="description" content="Seu vade mecum personalizado. Consulte leis oficiais, marque trechos e registre notas, imagens e áudios.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="/app.css">
+  <title>Meu Vade Mecum · Biblioteca jurídica</title>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <aside id="sidebar" class="sidebar">
+      <div class="brand">
+        <span class="brand-seal" aria-hidden="true">§</span>
+        <div class="brand-text"><strong>MEU VADE MECUM</strong><span>Biblioteca jurídica pessoal</span></div>
+        <button id="closeSidebar" class="icon-btn close-sidebar" aria-label="Fechar menu" type="button">✕</button>
+      </div>
+      <div class="sidebar-scroll">
+        <div class="side-intro">SUA ESTANTE <span id="lawCount" class="count-chip">0</span></div>
+        <button id="addLawSide" class="add-law-btn" type="button"><span>＋</span> Adicionar legislação</button>
+        <div class="sidebar-search"><span class="search-glyph">⌕</span><input id="libraryFilter" type="search" placeholder="Filtrar biblioteca..." aria-label="Filtrar biblioteca"></div>
+        <nav id="lawList" class="law-list" aria-label="Legislação adicionada"></nav>
+        <div id="emptySide" class="empty-side">Suas leis aparecerão aqui.</div>
+        <div class="side-divider"></div>
+        <button class="side-action" id="viewAllNotes" type="button"><span>◫</span> Todas as anotações</button>
+        <button class="side-action" id="exportBackup" type="button"><span>⇩</span> Exportar backup</button>
+        <label class="side-action file-import" for="importBackup"><span>⇧</span> Importar backup<input type="file" id="importBackup" accept=".json,application/json" hidden></label>
+      </div>
+      <div class="sidebar-footer"><span class="sidebar-status-dot"></span> Fontes oficiais · Dados locais <button id="helpBtn" class="foot-help" type="button" aria-label="Ajuda">?</button></div>
+    </aside>
+    <div class="sidebar-shade" id="sidebarShade" hidden></div>
+    <main class="workspace">
+      <header class="topbar">
+        <div class="top-left"><button id="openSidebar" class="icon-btn mobile-only" type="button" aria-label="Abrir menu">☰</button><span id="breadcrumb" class="breadcrumbs">Minha biblioteca <b>/</b> Visão geral</span></div>
+        <div class="top-right"><span id="syncStatus" class="sync-status"><span class="sync-dot"></span> Dados neste dispositivo</span><button id="installBtn" type="button" class="top-install" hidden>Instalar app</button><button id="toggleNotes" type="button" class="icon-btn note-trigger" aria-label="Abrir anotações" title="Anotações">▤</button></div>
+      </header>
+      <div class="mobile-banner" id="offlineBanner" hidden>Você está sem internet. Leis salvas continuam disponíveis.</div>
+      <div id="content" class="content-area" tabindex="-1"></div>
+    </main>
+    <aside id="notesRail" class="notes-rail" aria-label="Anotações">
+      <div class="rail-head"><div><div class="eyebrow">SEU MATERIAL DE REVISÃO</div><h2>Anotações</h2></div><button id="closeNotes" class="icon-btn" type="button" aria-label="Fechar anotações">✕</button></div>
+      <div class="rail-subtitle" id="notesSubtitle">Notas relacionadas ao conteúdo aberto</div>
+      <div id="notesList" class="rail-list"></div>
+      <div class="rail-footer"><span>Salvas somente neste navegador</span><button id="railBackup" type="button">Fazer backup ↗</button></div>
+    </aside>
+    <div class="notes-shade" id="notesShade" hidden></div>
+  </div>
+
+  <dialog id="lawDialog" class="modal" aria-labelledby="lawModalTitle">
+    <form id="addLawForm" class="modal-inner">
+      <div class="modal-top"><div><div class="eyebrow">AMPLIE SUA BIBLIOTECA</div><h2 id="lawModalTitle">Adicionar legislação</h2><p>Localize uma norma federal e importe o texto disponível na fonte oficial.</p></div><button class="icon-btn" type="button" data-close="lawDialog" aria-label="Fechar">✕</button></div>
+      <label class="field">Tipo de norma<select id="lawKind" required><option value="lei">Lei ordinária</option><option value="complementar">Lei complementar</option><option value="decretolei">Decreto-lei</option><option value="emenda">Emenda constitucional</option><option value="constituicao">Constituição Federal (1988)</option></select></label>
+      <div class="field-grid"><label class="field">Número<input id="lawNumber" inputmode="numeric" placeholder="Ex.: 6019" required maxlength="7" pattern="[0-9.]+"></label><label class="field">Ano<input id="lawYear" inputmode="numeric" placeholder="Ex.: 1974" maxlength="4" pattern="[0-9]{4}" required></label></div>
+      <label class="field"><span>URL oficial do Planalto <span class="field-optional">(opcional)</span></span><input id="lawUrl" type="url" placeholder="https://www.planalto.gov.br/ccivil_03/..." autocomplete="off"></label>
+      <div class="tip-box"><strong>Como funciona?</strong> A consulta automática exige que a função de importação esteja publicada no Netlify. Caso a consulta falhe, você também pode salvar o HTML da lei no site oficial e importá-lo manualmente abaixo.</div>
+      <div class="manual-import"><div class="manual-import-head"><strong>Alternativa: importar HTML salvo</strong><span>Funciona mesmo se o servidor de consulta estiver indisponível</span></div><label class="manual-import-btn" for="localLawFile">▧ Escolher arquivo .html ou .htm</label><input id="localLawFile" type="file" accept=".html,.htm,text/html" hidden><div id="localLawFileName" class="manual-filename" aria-live="polite"></div><p>Baixe o documento diretamente no Planalto. A cópia local não comprova que o texto esteja atualizado. Para atualizar automaticamente depois, será preciso ativar a consulta no servidor.</p></div>
+      <button id="testImportServer" class="diagnostic-link" type="button">⚙ Verificar serviço de importação</button>
+      <div id="lawError" class="form-error" role="alert" hidden></div>
+      <div class="modal-actions"><button class="btn btn-secondary" type="button" data-close="lawDialog">Cancelar</button><button id="importLawBtn" class="btn btn-primary" type="submit">Buscar e adicionar <span>→</span></button></div>
+    </form>
+  </dialog>
+
+  <dialog id="noteDialog" class="modal" aria-labelledby="noteModalTitle">
+    <form id="noteForm" class="modal-inner">
+      <div class="modal-top"><div><div class="eyebrow">SEU CADERNO DE ESTUDOS</div><h2 id="noteModalTitle">Anotar dispositivo</h2><p id="noteTarget" class="target-label"></p></div><button type="button" data-close="noteDialog" class="icon-btn" aria-label="Fechar">✕</button></div>
+      <div id="quotePreview" class="quote-preview" hidden></div>
+      <div class="field"><label for="noteBody">Sua anotação <span class="field-optional">(opcional)</span></label><textarea id="noteBody" rows="5" placeholder="Conceito, pegadinha da banca, lembrete de revisão..."></textarea></div>
+      <div class="field"><span>Cor da marcação</span><div id="colorChoices" class="color-choices"><label title="Amarelo"><input type="radio" name="noteColor" value="yellow" checked><span class="color-circle color-yellow"></span></label><label title="Verde"><input type="radio" name="noteColor" value="green"><span class="color-circle color-green"></span></label><label title="Rosa"><input type="radio" name="noteColor" value="pink"><span class="color-circle color-pink"></span></label><label title="Azul"><input type="radio" name="noteColor" value="blue"><span class="color-circle color-blue"></span></label></div></div>
+      <div class="attachment-area"><label class="attach-button" for="noteFiles">▧ Adicionar imagem / áudio<input id="noteFiles" type="file" accept="image/*,audio/*" multiple hidden></label><button id="recordBtn" class="attach-button" type="button">◉ Gravar áudio</button></div>
+      <div id="pendingFiles" class="pending-files"></div><div id="noteError" class="form-error" hidden></div>
+      <div class="modal-actions"><button id="deleteNote" class="btn btn-danger" type="button" hidden>Excluir</button><span class="flex-spacer"></span><button type="button" data-close="noteDialog" class="btn btn-secondary">Cancelar</button><button id="saveNote" type="submit" class="btn btn-primary">Salvar anotação</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="helpDialog" class="modal" aria-labelledby="helpTitle"><div class="modal-inner"><div class="modal-top"><div><div class="eyebrow">ORIENTAÇÕES</div><h2 id="helpTitle">Sobre o Meu Vade Mecum</h2></div><button type="button" class="icon-btn" data-close="helpDialog">✕</button></div><div class="help-content"><p><strong>Fontes:</strong> importamos o texto HTML disponibilizado pelo Planalto. Consulte sempre o link oficial para confirmar alterações, dispositivos revogados e casos de formatação complexa.</p><p><strong>Atualizações:</strong> o aplicativo verifica as leis cuja última conferência tem mais de 24 horas ao ser aberto com internet. Você também pode tocar em “Verificar alterações”. A função não monitora mudanças quando o aplicativo está fechado.</p><p><strong>Anotações:</strong> selecione um trecho do dispositivo para marcar ou use “Anotar”. Ao atualizar uma lei, as notas não são apagadas; trechos alterados são indicados para conferência.</p><p><strong>Armazenamento:</strong> textos importados, anotações, imagens e áudios ficam neste dispositivo e neste navegador, usando IndexedDB. Excluir dados do navegador pode apagá-los. Faça backups regularmente.</p><p><strong>Sincronização:</strong> esta versão não faz login nem sincroniza entre celulares e computadores. Essa funcionalidade precisará de uma base em nuvem e autenticação.</p></div><div class="modal-actions"><button class="btn btn-primary" type="button" data-close="helpDialog">Entendi</button></div></div></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script type="module" src="/app.js?v=2"></script>
+</body>
+</html>

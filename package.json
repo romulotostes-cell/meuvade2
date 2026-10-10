@@ -1,0 +1,17 @@
+{
+  "name": "meu-vade-mecum",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Vade mecum pessoal com fontes oficiais e anotações locais",
+  "scripts": {
+    "dev": "netlify dev",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
